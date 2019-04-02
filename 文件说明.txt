@@ -10,6 +10,7 @@
 2.Facesystem.db：项目sqlite数据库
 2.deal_data.py：数据处理实现
 4.Export_to_excel.py：导出excel实现
+5.seng_email.py：实现向指定联系人发送邮件
 
 三.安装库：
 1.自带：pip、setuptools、wheel
