@@ -557,6 +557,8 @@ class WAS(wx.Frame):
     def OnEndPunchCardClicked(self, event):
         self.start_punchcard.Enable(True)
         self.end_puncard.Enable(False)
+        # 停止人脸识别，释放摄像头
+        self.cap.release()
         pass
 
     # 初始化 左侧信息提示功能
