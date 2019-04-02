@@ -1,6 +1,5 @@
 import xlwt
 import sqlite3
-import deal_data
 
 def export_excel(table_name,type):
     conn = sqlite3.connect("facesystem.db")
@@ -31,6 +30,6 @@ def export_excel(table_name,type):
         for col, field in enumerate(data):  # 控制列数
             sheet.write(row,col,field)
         row += 1 #每次写完一行，行数加1
-    book.save('%s.xls' % table_name)  # 保存excel文件
+    book.save('data/%s.xls' % table_name)  # 保存excel文件
 
 #export_excel('进出历史')

@@ -12,6 +12,7 @@ import _thread
 
 import Export_to_excel
 import deal_data
+import send_email
 
 ID_NEW_REGISTER = 160
 ID_FINISH_REGISTER = 161
@@ -24,6 +25,8 @@ ID_CLOSE_LOGCAT = 284
 
 ID_EXPORT_LOGCAT = 255
 ID_PERSON_INFO = 256
+
+ID_SEND_EMAIL = 123
 
 ID_WORKER_UNAVIABLE = -1
 
@@ -113,6 +116,7 @@ class WAS(wx.Frame):
         self.close_logcat.SetBitmap(wx.Bitmap("drawable/close_logcat.png"))
         self.close_logcat.SetFont(menu_Font)
         self.close_logcat.SetTextColour("SLATE BLUE")
+        self.end_puncard.Enable(False)
         logcatMenu.Append(self.close_logcat)
 
         exportlogMenu = wx.Menu()
@@ -128,10 +132,18 @@ class WAS(wx.Frame):
         self.export_person.SetTextColour("SLATE BLUE")
         exportlogMenu.Append(self.export_person)
 
+        emailMenu = wx.Menu()
+        self.send_email = wx.MenuItem(emailMenu, ID_SEND_EMAIL, "发送邮件")
+        self.send_email.SetBitmap(wx.Bitmap("drawable/send_email.png"))
+        self.send_email.SetFont(menu_Font)
+        self.export_person.SetTextColour("SLATE BLUE")
+        emailMenu.Append(self.send_email)
+
         menuBar.Append(registerMenu, "&人脸录入")
         menuBar.Append(puncardMenu, "&人脸识别")
-        menuBar.Append(logcatMenu, "&识别日志")
+        menuBar.Append(logcatMenu, "&日志查看")
         menuBar.Append(exportlogMenu, "资料导出")
+        menuBar.Append(emailMenu, "邮件管理")
         self.SetMenuBar(menuBar)
 
         self.Bind(wx.EVT_MENU, self.OnNewRegisterClicked, id=ID_NEW_REGISTER)
@@ -142,27 +154,87 @@ class WAS(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnCloseLogcatClicked, id=ID_CLOSE_LOGCAT)
         self.Bind(wx.EVT_MENU, self.OnExportLogcatCilcked, id=ID_EXPORT_LOGCAT)
         self.Bind(wx.EVT_MENU, self.OnExportPersonCilcked, id=ID_PERSON_INFO)
+        self.Bind(wx.EVT_MENU, self.OnSendEmailCilcked, id=ID_SEND_EMAIL)
+
+    # 发送邮件 点击事件
+    def OnSendEmailCilcked(self, event):
+        print("已点击导出邮件")
+        self.receiver = ""
+        Export_to_excel.export_excel("门禁出入记录", ID_EXPORT_LOGCAT)
+        file_path = os.path.abspath("data/门禁出入记录.xls")
+        print(file_path)
+        # 设置收件人输入框
+        while self.receiver == "":
+            email_addr = wx.GetTextFromUser(message="请输入收件人邮箱：",
+                                            caption="收件人邮箱信息录入",
+                                            default_value="", parent=self.bmp)
+            if email_addr == "":
+                wx.MessageBox("请输入收件人邮箱")
+                break
+            else:
+                receiver1 = send_email.is_valid_email(email_addr)
+                if receiver1:
+                    while self.receiver == "":
+                        email_addr = wx.GetTextFromUser(message="请再次输入收件人邮箱：",
+                                                        caption="收件人邮箱信息录入",
+                                                        default_value="", parent=self.bmp)
+                        if email_addr == "":
+                            wx.MessageBox("再次输入收件人邮箱为空或您已取消输入")
+                            break
+                        else:
+                            receiver2 = send_email.is_valid_email(email_addr)
+                            if receiver2:
+                                if receiver1 == receiver2:
+                                    self.receiver = receiver1
+                                    print(self.receiver)
+                                    try:
+                                        send_email.email(file_path, self.receiver)
+                                        self.infoText.AppendText(
+                                            "\r\n" + self.getDateAndTime() + "\r\n" + "邮件发送成功\r\n""请告知收件人:" + self.receiver + "注意查收\r\n")
+                                    except:
+                                        self.infoText.AppendText(
+                                            "\r\n" + self.getDateAndTime() + "\r\n" + "邮件发送失败，请尝试重新发送\r\n")
+
+                                else:
+                                    wx.MessageBox("两次邮箱不相同，请重新输入")
+                                    break
+                            else:
+                                wx.MessageBox("再次输入邮箱地址格式不正确，请重新输入")
+                                self.receiver = ""
+                else:
+                    wx.MessageBox("邮箱格式不正确，请重新输入")
+                    self.receiver = ""
+            # 内层循环中有需要的都会再次进入内层循环进行输入，如内层循环已中断，那外层循环无必要再进行一次故中断，退出两次循环
+            break
 
     # 导出人员信息，点击事件响应
     def OnExportPersonCilcked(self, event):
         self.logname = wx.GetTextFromUser(message="请输入导出人员信息文件名",
                                           caption="温馨提示",
                                           default_value="", parent=self.bmp)
-        Export_to_excel.export_excel(self.logname, ID_PERSON_INFO)
-        self.infoText.AppendText(
-            "\r\n" + self.getDateAndTime() + "\r\n" + "文件:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
+        if self.logname == "":
+            wx.MessageBox("请输入导出日志文件名")
+        else:
+            Export_to_excel.export_excel(self.logname, ID_PERSON_INFO)
+            self.infoText.AppendText(
+                "\r\n" + self.getDateAndTime() + "\r\n" + "文件:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
 
     # 导出日志，点击事件响应
     def OnExportLogcatCilcked(self, event):
         self.logname = wx.GetTextFromUser(message="请输入导出日志文件名",
                                           caption="温馨提示",
                                           default_value="", parent=self.bmp)
-        Export_to_excel.export_excel(self.logname, ID_EXPORT_LOGCAT)
-        self.infoText.AppendText(
-            "\r\n" + self.getDateAndTime() + "\r\n" + "日志:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
+        if self.logname == "":
+            wx.MessageBox("请输入导出日志文件名")
+        else:
+            Export_to_excel.export_excel(self.logname, ID_EXPORT_LOGCAT)
+            self.infoText.AppendText(
+                "\r\n" + self.getDateAndTime() + "\r\n" + "日志:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
 
     # 打开日志 点击事件响应
     def OnOpenLogcatClicked(self, event):
+        self.open_logcat.Enable(False)
+        self.close_logcat.Enable(True)
         self.loadDataBase(2)
         grid = wx.grid.Grid(self, pos=(320, 0), size=(600, 500))
 
@@ -193,6 +265,8 @@ class WAS(wx.Frame):
 
     # 关闭日志 点击事件响应
     def OnCloseLogcatClicked(self, event):
+        self.open_logcat.Enable(True)
+        self.close_logcat.Enable(False)
         self.initGallery()
         pass
 
@@ -304,30 +378,48 @@ class WAS(wx.Frame):
         self.finish_register.Enable(True)
         self.loadDataBase(1)
         while self.id == ID_WORKER_UNAVIABLE:
-            self.id = wx.GetNumberFromUser(message="请输入您的工号(-1不可用)",
+            self.id = wx.GetNumberFromUser(message="请输入您的工号(大于或等于0的整数)",
                                            prompt="工号", caption="温馨提示",
-                                           value=ID_WORKER_UNAVIABLE,
-                                           parent=self.bmp, max=100000000, min=ID_WORKER_UNAVIABLE)
+                                           value=ID_WORKER_UNAVIABLE + 1,
+                                           parent=self.bmp, min=ID_WORKER_UNAVIABLE + 1)
             print(self.id)
-            for knew_id in self.knew_id:
-                if knew_id == self.id:
-                    self.id = ID_WORKER_UNAVIABLE
-                    wx.MessageBox(message="工号已存在，请重新输入", caption="警告")
-
-        while self.name == '':
-            self.name = wx.GetTextFromUser(message="请输入您的的姓名,用于创建姓名文件夹",
-                                           caption="温馨提示",
-                                           default_value="", parent=self.bmp)
-
-            # 监测是否重名
-            for exsit_name in (os.listdir(PATH_FACE)):
-                if self.name == exsit_name:
-                    wx.MessageBox(message="姓名文件夹已存在，请重新输入", caption="警告")
-                    self.name = ''
-                    break
-        os.makedirs(PATH_FACE + self.name)
-        _thread.start_new_thread(self.register_cap, (event,))
-        pass
+            # 判断语句 wx.GetNumberFromUser函数点击cancel和对话框右上角×都是返回-1，因此当为-1时，break
+            if self.id == -1:
+                self.new_register.Enable(True)
+                self.finish_register.Enable(False)
+                break
+            else:
+                # 检查工号是否已存在，如果工号已存在，重新输入
+                for knew_id in self.knew_id:
+                    if knew_id == self.id:
+                        wx.MessageBox(message="工号已存在，请重新输入", caption="警告")
+                        # 重置self.id为ID_WORKER_UNAVIABLE，重新显示输入工号对话框
+                        self.id = ID_WORKER_UNAVIABLE
+                        break
+                    else:
+                        while self.name == '':
+                            self.name = wx.GetTextFromUser(message="请输入您的的姓名,用于创建姓名文件夹",
+                                                           caption="温馨提示",
+                                                           default_value="", parent=self.bmp)
+                            print(self.name)
+                            # 判断语句 wx.GetTextFromUser函数点击cancel、对话框右上角×和值为空都是返回-1，因此当为-1时，提示用户后break,不break会一直循环弹出对话框提示用户输入
+                            if self.name == "":
+                                wx.MessageBox("请输入您的的姓名,完成姓名文件夹创建")
+                                # 新建按钮可用，完成按钮不可用
+                                self.new_register.Enable(True)
+                                self.finish_register.Enable(False)
+                                break
+                            else:
+                                # 监测是否重名
+                                for exsit_name in (os.listdir(PATH_FACE)):
+                                    if self.name == exsit_name:
+                                        wx.MessageBox(message="姓名文件夹已存在，请重新输入", caption="警告")
+                                        # 重置self.name为空，重新显示输入姓名对话框
+                                        self.name = ''
+                                        break
+                                os.makedirs(PATH_FACE + self.name)
+                                _thread.start_new_thread(self.register_cap, (event,))
+                                pass
 
     # 完成注册 功能实现
     def OnFinishRegister(self):
@@ -455,12 +547,6 @@ class WAS(wx.Frame):
 
     # 开始人脸识别 点击事件
     def OnStartPunchCardClicked(self, event):
-        # cur_hour = datetime.datetime.now().hour
-        # print(cur_hour)
-        # if cur_hour>=8 or cur_hour<6:
-        #     wx.MessageBox(message='''您错过了今天的签到时间，请明天再来\n
-        #     每天的签到时间是:6:00~7:59''', caption="警告")
-        #     return
         self.start_punchcard.Enable(False)
         self.end_puncard.Enable(True)
         self.loadDataBase(2)
@@ -514,14 +600,14 @@ class WAS(wx.Frame):
         conn = sqlite3.connect("facesystem.db")  # 建立数据库连接
         cur = conn.cursor()  # 得到游标对象
         cur.execute('''create table if not exists worker_info
-        (id int not null primary key,
-        name text not null,
-        face_feature array not null)''')
+            (id int not null primary key,
+            name text not null,
+            face_feature array not null)''')
         cur.execute('''create table if not exists logcat
-         (num INTEGER primary key autoincrement,
-         id int not null,
-         name text not null,
-         datetime text not null)''')
+             (num INTEGER primary key autoincrement,
+             id int not null,
+             name text not null,
+             datetime text not null)''')
         cur.close()
         conn.commit()
         conn.close()
@@ -550,7 +636,6 @@ class WAS(wx.Frame):
 
     # 加载数据库
     def loadDataBase(self, type):
-
         conn = sqlite3.connect("facesystem.db")  # 建立数据库连接
         cur = conn.cursor()  # 得到游标对象
 
