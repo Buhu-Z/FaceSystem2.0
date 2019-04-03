@@ -228,8 +228,13 @@ class WAS(wx.Frame):
             wx.MessageBox("请输入导出日志文件名")
         else:
             Export_to_excel.export_excel(self.logname, ID_EXPORT_LOGCAT)
+            #插入点1
+            # insertpoint1 = self.infoText.GetInsertionPoint()
             self.infoText.AppendText(
                 "\r\n" + self.getDateAndTime() + "\r\n" + "日志:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
+            #插入点2 及打印插入点12之间的内容，暂未实现，先注释掉
+            # insertpoint2 = self.infoText.GetInsertionPoint()
+            # print(self.infoText.GetRange(insertpoint1,insertpoint2))
 
     # 打开日志 点击事件响应
     def OnOpenLogcatClicked(self, event):
@@ -601,15 +606,22 @@ class WAS(wx.Frame):
     def initDatabase(self):
         conn = sqlite3.connect("facesystem.db")  # 建立数据库连接
         cur = conn.cursor()  # 得到游标对象
+        # 人员表
         cur.execute('''create table if not exists worker_info
             (id int not null primary key,
             name text not null,
             face_feature array not null)''')
+        # 进出时间表
         cur.execute('''create table if not exists logcat
              (num INTEGER primary key autoincrement,
              id int not null,
              name text not null,
              datetime text not null)''')
+        # # 操作日志表
+        # cur.execute('''create table if not exists operate_log
+        # (id int not null primary,
+        # operatetime text not null,
+        # operatetext text not null)''')
         cur.close()
         conn.commit()
         conn.close()
@@ -630,7 +642,12 @@ class WAS(wx.Frame):
             cur.execute("insert into logcat (id,name,datetime) values(?,?,?)",
                         (Row[0], Row[1], Row[2]))
             print("写日志成功")
-            pass
+
+        # # 写操作日志
+        # if type == 3:
+        #     cur.execute("insert into operate_log (operatetime,operatetext) values(?,?)", (Row[0], Row[1]))
+        #     print("写操作日志成功")
+
         cur.close()
         conn.commit()
         conn.close()
@@ -674,10 +691,15 @@ class WAS(wx.Frame):
                 self.logcat_name.append(row[2])
                 print(row[3])
                 self.logcat_datetime.append(row[3])
+
+        # # 加载操作日志表
+        # if type == 3:
+        #     pass
         pass
 
 
-app = wx.App()
-frame = WAS()
-frame.Show()
-app.MainLoop()
+if __name__ == "__main__":
+    app = wx.App()
+    frame = WAS()
+    frame.Show()
+    app.MainLoop()
