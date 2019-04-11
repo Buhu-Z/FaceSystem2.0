@@ -422,9 +422,10 @@ class WAS(wx.Frame):
                                         # 重置self.name为空，重新显示输入姓名对话框
                                         self.name = ''
                                         break
-                                os.makedirs(PATH_FACE + self.name)
-                                _thread.start_new_thread(self.register_cap, (event,))
-                                pass
+                                    else:
+                                        os.makedirs(PATH_FACE + self.name)
+                                        _thread.start_new_thread(self.register_cap, (event,))
+                                        pass
 
     # 完成注册 功能实现
     def OnFinishRegister(self):
