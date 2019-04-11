@@ -1,34 +1,37 @@
 一.文件夹：
-1. Include、Lib、Scripts、tcl：为创建虚拟环境生成文件夹，保存此虚拟环境内置文件
-2. data：保存人脸数据
-3. model：dlib库所需资源
-4. drawtable：facesystem所需图标
-5. share __pycache__ .idea：编译产生
+1. Include、Lib、Scripts、tcl：为创建虚拟环境生成文件夹，保存此虚拟环境内置文件；
+2. data：保存人脸数据；
+3. model：dlib库所需资源；
+4. drawtable：facesystem所需图标；
+5. share __pycache__ .idea：编译产生；
 
 二.文件：
-1.Facesystem.py：项目主要实现
-2.Facesystem.db：项目sqlite数据库
-2.deal_data.py：数据处理实现
-4.Export_to_excel.py：导出excel实现
-5.seng_email.py：实现向指定联系人发送邮件
+1.Facesystem.py：项目主要实现；
+2.Facesystem.db：项目sqlite数据库；
+2.deal_data.py：数据处理实现；
+4.Export_to_excel.py：导出excel实现；
+5.seng_email.py：实现向指定联系人发送邮件；
+6.Voice_broadcast.py：语音播报实现文件；
 
 三.安装库：
-1.自带：pip、setuptools、wheel
-2.安装第三方库：six, Pillow, wxpython，numpy, opencv-python，xlwt，scipy，toolz, dask, PyWavelets, cloudpickle, decorator, networkx, scikit-image，dlib
+1.自带：pip、setuptools、wheel；
+2.安装第三方库：six, Pillow, wxpython，numpy, opencv-python，xlwt，scipy，toolz, dask, PyWavelets, cloudpickle, decorator, networkx, scikit-image，dlib，pyttsx3，pywin32, pypiwin32；
 
 四.所需库
 1.自带库：
-a.sqlite3[具体使用：sqlite3]
-b.time[具体使用：localtime、strftime]
-c.os[具体使用：os]
-d._thread[具体使用：_thread]
-e.io[具体使用：io]
-f.zlib[具体使用：zlib]
+a.sqlite3[具体使用：sqlite3]；
+b.time[具体使用：localtime、strftime]；
+c.os[具体使用：os]；
+d._thread[具体使用：_thread]；
+e.io[具体使用：io]；
+f.zlib[具体使用：zlib]；
 
 2.第三方库：
-a.wxpython（pip install wxpython ；最终安装：six, Pillow, wxpython）[具体使用：wx、wx.grid]
-b.opencv-python（pip install opencv-python ；最终安装：numpy, opencv-python）[具体使用：cv2]
-c.xlwt（pip install xlwt ；最终安装：xlwt）[具体使用：xlwt]
-d.numpy（pip install numpy ；最终安装：numpy）[具体使用：numpy]
-e.skimage：（安装方法：https://blog.csdn.net/ycc297876771/article/details/80271403 ；依赖库：scipy（pip install scipy ；最终安装：scipy）、scikit_image（pip install scikit_image ；最终安装：toolz, dask, PyWavelets, cloudpickle, decorator, networkx, scikit-image））[具体使用：skimage]
-f.dlib（安装方法：https://blog.csdn.net/qq_41185868/article/details/79678783  ；最终安装：dlib）[具体使用：dlib]
+a.wxpython（pip install wxpython ；最终安装：six, Pillow, wxpython）[具体使用：wx、wx.grid]；
+b.opencv-python（pip install opencv-python ；最终安装：numpy, opencv-python）[具体使用：cv2]；
+c.xlwt（pip install xlwt ；最终安装：xlwt）[具体使用：xlwt]；
+d.numpy（pip install numpy ；最终安装：numpy）[具体使用：numpy]；
+e.skimage：（安装方法：https://blog.csdn.net/ycc297876771/article/details/80271403 ；依赖库：scipy（pip install scipy ；最终安装：scipy）、scikit_image（pip install scikit_image ；最终安装：toolz, dask, PyWavelets, cloudpickle, decorator, networkx, scikit-image））[具体使用：skimage]；
+f.dlib（安装方法：https://blog.csdn.net/qq_41185868/article/details/79678783  ；最终安装：dlib）[具体使用：dlib]；
+g.pyttsx3（安装方法：pip install pyttsx3 ；最终安装：pyttsx3）[具体使用：pyttsx3]；
+h.pypiwin32（安装方法：pip install pypiwin32 ； 最终安装：pywin32, pypiwin32）[具体使用：win32com（pyttsx3）]；

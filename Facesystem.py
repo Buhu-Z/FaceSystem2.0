@@ -13,6 +13,7 @@ import _thread
 import Export_to_excel
 import deal_data
 import send_email
+import Voice_broadcast
 
 ID_NEW_REGISTER = 160
 ID_FINISH_REGISTER = 161
@@ -114,8 +115,8 @@ class WAS(wx.Frame):
 
         self.close_logcat = wx.MenuItem(logcatMenu, ID_CLOSE_LOGCAT, "关闭日志")
         self.close_logcat.SetBitmap(wx.Bitmap("drawable/close_logcat.png"))
-        self.close_logcat.SetFont(menu_Font)
         self.close_logcat.SetTextColour("SLATE BLUE")
+        self.close_logcat.SetFont(menu_Font)
         self.end_puncard.Enable(False)
         logcatMenu.Append(self.close_logcat)
 
@@ -191,9 +192,11 @@ class WAS(wx.Frame):
                                         send_email.email(file_path, self.receiver)
                                         self.infoText.AppendText(
                                             "\r\n" + self.getDateAndTime() + "\r\n" + "邮件发送成功\r\n""请告知收件人:" + self.receiver + "注意查收\r\n")
+                                        Voice_broadcast.VoiceBroadcast(7, receiver=self.receiver)
                                     except:
                                         self.infoText.AppendText(
                                             "\r\n" + self.getDateAndTime() + "\r\n" + "邮件发送失败，请尝试重新发送\r\n")
+                                        Voice_broadcast.VoiceBroadcast(8)
 
                                 else:
                                     wx.MessageBox("两次邮箱不相同，请重新输入")
@@ -213,28 +216,30 @@ class WAS(wx.Frame):
                                           caption="温馨提示",
                                           default_value="", parent=self.bmp)
         if self.logname == "":
-            wx.MessageBox("请输入导出日志文件名")
+            wx.MessageBox("请输入导出人员信息文件名")
         else:
             Export_to_excel.export_excel(self.logname, ID_PERSON_INFO)
             self.infoText.AppendText(
-                "\r\n" + self.getDateAndTime() + "\r\n" + "文件:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
+                "\r\n" + self.getDateAndTime() + "\r\n" + "人员信息文件:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
+            Voice_broadcast.VoiceBroadcast(6, logname=self.logname)
 
     # 导出日志，点击事件响应
     def OnExportLogcatCilcked(self, event):
-        self.logname = wx.GetTextFromUser(message="请输入导出日志文件名",
+        self.logname = wx.GetTextFromUser(message="请输入导出进出日志文件名",
                                           caption="温馨提示",
                                           default_value="", parent=self.bmp)
         if self.logname == "":
-            wx.MessageBox("请输入导出日志文件名")
+            wx.MessageBox("请输入导出进出日志文件名")
         else:
             Export_to_excel.export_excel(self.logname, ID_EXPORT_LOGCAT)
-            #插入点1
+            # 插入点1
             # insertpoint1 = self.infoText.GetInsertionPoint()
             self.infoText.AppendText(
-                "\r\n" + self.getDateAndTime() + "\r\n" + "日志:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
-            #插入点2 及打印插入点12之间的内容，暂未实现，先注释掉
+                "\r\n" + self.getDateAndTime() + "\r\n" + "进出日志:" + self.logname + " 导出成功，请在当前文件夹查看\r\n")
+            # 插入点2 及打印插入点12之间的内容，暂未实现，先注释掉
             # insertpoint2 = self.infoText.GetInsertionPoint()
             # print(self.infoText.GetRange(insertpoint1,insertpoint2))
+            Voice_broadcast.VoiceBroadcast(5, logname=self.logname)
 
     # 打开日志 点击事件响应
     def OnOpenLogcatClicked(self, event):
@@ -336,6 +341,7 @@ class WAS(wx.Frame):
                         self.infoText.AppendText(
                             "\r\n" + self.getDateAndTime() + "\r\n" + "工号:" + str(self.knew_id[i])
                             + " 姓名:" + self.knew_name[i] + " 的人脸数据已存在\r\n")
+                        Voice_broadcast.VoiceBroadcast(2, num=str(self.knew_id[i]), name=self.knew_name[i])
                         self.flag_registed = True
                         self.OnFinishRegister()
                         _thread.exit()
@@ -475,6 +481,7 @@ class WAS(wx.Frame):
                 self.insertARow([self.id, self.name, feature_average], 1)
                 self.infoText.AppendText("\r\n" + self.getDateAndTime() + "\r\n" + "工号:" + str(self.id)
                                          + " 姓名:" + self.name + " 的人脸数据已成功存入\r\n")
+                Voice_broadcast.VoiceBroadcast(3, num=str(self.id), name=self.name)
             pass
 
         else:
@@ -543,6 +550,7 @@ class WAS(wx.Frame):
                         nowdt = self.getDateAndTime()
                         self.infoText.AppendText("\r\n" + nowdt + "\r\n" + "工号:" + str(self.knew_id[i])
                                                  + " 姓名:" + self.knew_name[i] + " 门已开，请进\r\n")
+                        Voice_broadcast.VoiceBroadcast(4, num=str(self.knew_id[i]), name=self.knew_name[i])
                         self.insertARow([self.knew_id[i], self.knew_name[i], nowdt], 2)
                         self.loadDataBase(2)
                         break
@@ -574,6 +582,7 @@ class WAS(wx.Frame):
         resultText.SetBackgroundColour('red')
 
         self.info = "\r\n" + self.getDateAndTime() + "\r\n" + "程序初始化成功\r\n"
+        Voice_broadcast.VoiceBroadcast(1)
         # 第二个参数水平混动条
         self.infoText = wx.TextCtrl(parent=self, size=(320, 500),
                                     style=(wx.TE_MULTILINE | wx.HSCROLL | wx.TE_READONLY))
