@@ -400,6 +400,9 @@ class WAS(wx.Frame):
                 self.finish_register.Enable(False)
                 break
             else:
+                # 处理第一次使用该系统时，worker_info表为空，若直接检测工号是否已存在，会因self.knew_id为空，而造成取值失败，之后系统中断，当worker_info表存在数据就无问题
+                if len(self.knew_id) == 0:
+                    self.knew_id = [-1, ]
                 # 检查工号是否已存在，如果工号已存在，重新输入
                 for knew_id in self.knew_id:
                     if knew_id == self.id:
@@ -421,8 +424,12 @@ class WAS(wx.Frame):
                                 self.finish_register.Enable(False)
                                 break
                             else:
+                                Picfilename = os.listdir(PATH_FACE)
+                                # 处理第一次使用该系统时，储存人脸数据位置不存在文件夹，若直接检测重名，会因picfilename为空，而造成取值失败，之后系统中断，当储存人脸数据位置就无问题
+                                if len(Picfilename)==0:
+                                    Picfilename = ["无人脸照片文件夹",]
                                 # 监测是否重名
-                                for exsit_name in (os.listdir(PATH_FACE)):
+                                for exsit_name in Picfilename:
                                     if self.name == exsit_name:
                                         wx.MessageBox(message="姓名文件夹已存在，请重新输入", caption="警告")
                                         # 重置self.name为空，重新显示输入姓名对话框
