@@ -297,7 +297,7 @@ class WAS(wx.Frame):
             flag, im_rd = self.cap.read()
 
             # 每帧数据延时1ms，延时为0读取的是静态帧
-            kk = cv2.waitKey(1)
+            kk = cv2.waitKey(4)
             # 人脸数 dets
             dets = detector(im_rd, 1)
 
@@ -400,45 +400,52 @@ class WAS(wx.Frame):
                 self.finish_register.Enable(False)
                 break
             else:
-                # 处理第一次使用该系统时，worker_info表为空，若直接检测工号是否已存在，会因self.knew_id为空，而造成取值失败，之后系统中断，当worker_info表存在数据就无问题
+                # 检查工号是否已存在，如果工号已存在，重新输入
+                # 处理第一次使用该系统时，workinfo为空，若直接检测工号是否存在，会因表中无数据，而造成取值失败，之后系统中断，赋初值做对比则可避免
                 if len(self.knew_id) == 0:
                     self.knew_id = [-1, ]
-                # 检查工号是否已存在，如果工号已存在，重新输入
-                for knew_id in self.knew_id:
-                    if knew_id == self.id:
-                        wx.MessageBox(message="工号已存在，请重新输入", caption="警告")
-                        # 重置self.id为ID_WORKER_UNAVIABLE，重新显示输入工号对话框
-                        self.id = ID_WORKER_UNAVIABLE
-                        break
-                    else:
-                        while self.name == '':
-                            self.name = wx.GetTextFromUser(message="请输入您的的姓名,用于创建姓名文件夹",
-                                                           caption="温馨提示",
-                                                           default_value="", parent=self.bmp)
-                            print(self.name)
-                            # 判断语句 wx.GetTextFromUser函数点击cancel、对话框右上角×和值为空都是返回-1，因此当为-1时，提示用户后break,不break会一直循环弹出对话框提示用户输入
-                            if self.name == "":
-                                wx.MessageBox("请输入您的的姓名,完成姓名文件夹创建")
-                                # 新建按钮可用，完成按钮不可用
-                                self.new_register.Enable(True)
-                                self.finish_register.Enable(False)
-                                break
-                            else:
-                                Picfilename = os.listdir(PATH_FACE)
-                                # 处理第一次使用该系统时，储存人脸数据位置不存在文件夹，若直接检测重名，会因picfilename为空，而造成取值失败，之后系统中断，当储存人脸数据位置就无问题
-                                if len(Picfilename)==0:
-                                    Picfilename = ["无人脸照片文件夹",]
-                                # 监测是否重名
-                                for exsit_name in Picfilename:
-                                    if self.name == exsit_name:
-                                        wx.MessageBox(message="姓名文件夹已存在，请重新输入", caption="警告")
-                                        # 重置self.name为空，重新显示输入姓名对话框
-                                        self.name = ''
-                                        break
-                                    else:
-                                        os.makedirs(PATH_FACE + self.name)
-                                        _thread.start_new_thread(self.register_cap, (event,))
-                                        pass
+                while self.id in self.knew_id:
+                    wx.MessageBox(message="工号已存在，请重新输入", caption="警告")
+                    # 重置self.id为ID_WORKER_UNAVIABLE，重新显示输入工号对话框
+                    self.id = ID_WORKER_UNAVIABLE
+                    break
+                if self.id == ID_WORKER_UNAVIABLE:
+                    pass
+                else:
+                    # for knew_id in self.knew_id:
+                    #     if knew_id == self.id:
+                    #         wx.MessageBox(message="工号已存在，请重新输入", caption="警告")
+                    #         # 重置self.id为ID_WORKER_UNAVIABLE，重新显示输入工号对话框
+                    #         self.id = ID_WORKER_UNAVIABLE
+                    #         break
+                    #     else:
+                    while self.name == '':
+                        self.name = wx.GetTextFromUser(message="请输入您的的姓名,用于创建姓名文件夹",
+                                                       caption="温馨提示",
+                                                       default_value="", parent=self.bmp)
+                        print(self.name)
+                        # 判断语句 wx.GetTextFromUser函数点击cancel、对话框右上角×和值为空都是返回-1，因此当为-1时，提示用户后break,不break会一直循环弹出对话框提示用户输入
+                        if self.name == "":
+                            wx.MessageBox("请输入您的的姓名,完成姓名文件夹创建")
+                            # 新建按钮可用，完成按钮不可用
+                            self.initData()
+                            break
+                        else:
+                            Picfilename = os.listdir(PATH_FACE)
+                            # 处理第一次使用该系统时，储存人脸数据位置不存在文件夹，若直接检测重名，会因picfilename为空，而造成取值失败，之后系统中断，赋初值做对比则可避免
+                            if len(Picfilename) == 0:
+                                Picfilename = ["无人脸照片文件夹", ]
+                            # 监测是否重名
+                            for exsit_name in Picfilename:
+                                if self.name == exsit_name:
+                                    wx.MessageBox(message="姓名文件夹已存在，请重新输入", caption="警告")
+                                    # 重置self.name为空，重新显示输入姓名对话框
+                                    self.name = ''
+                                    break
+                                else:
+                                    os.makedirs(PATH_FACE + self.name)
+                                    _thread.start_new_thread(self.register_cap, (event,))
+                                    pass
 
     # 完成注册 功能实现
     def OnFinishRegister(self):
@@ -490,7 +497,6 @@ class WAS(wx.Frame):
                                          + " 姓名:" + self.name + " 的人脸数据已成功存入\r\n")
                 Voice_broadcast.VoiceBroadcast(3, num=str(self.id), name=self.name)
             pass
-
         else:
             os.rmdir(PATH_FACE + self.name)
             print("已删除空文件夹", PATH_FACE + self.name)
@@ -516,7 +522,7 @@ class WAS(wx.Frame):
             #    图像对象，图像的三维矩阵
             flag, im_rd = self.cap.read()
             # 每帧数据延时1ms，延时为0读取的是静态帧
-            kk = cv2.waitKey(1)
+            kk = cv2.waitKey(4)
             # 人脸数 dets
             dets = detector(im_rd, 1)
 
